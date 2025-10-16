@@ -1,70 +1,205 @@
-# Getting Started with Create React App
+# Wings Hobbies - RC E-commerce Platform
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern, full-featured e-commerce platform for RC (Radio Controlled) airplanes and hobby products built with React and Bootstrap.
 
-## Available Scripts
+![Wings Hobbies](https://img.shields.io/badge/React-18.x-blue)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3.0-purple)
+![License](https://img.shields.io/badge/License-MIT-green)
 
-In the project directory, you can run:
+## 🚀 Features
 
-### `npm start`
+- **Product Catalog** - Browse 12+ RC airplane models with detailed specifications
+- **Advanced Search & Filters** - Search, category filter, price range, and sorting
+- **Shopping Cart** - Add, update, remove items with persistent storage
+- **Wishlist** - Save favorite products
+- **User Authentication** - Login, register, profile management
+- **Order Management** - View order history and details
+- **Product Reviews** - Rating system with review submission
+- **Product Comparison** - Compare up to 3 products side-by-side
+- **Responsive Design** - Mobile, tablet, and desktop optimized
+- **Live Chat Widget** - Customer support chat
+- **Voucher System** - Apply discount codes
+- **SEO Optimized** - Meta tags and robots.txt
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## 🛠️ Tech Stack
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **Frontend**: React 18, React Router DOM 6
+- **UI Framework**: Bootstrap 5.3.0
+- **Icons**: Font Awesome 6.5.1
+- **State Management**: React Context API
+- **Storage**: localStorage for data persistence
+- **Styling**: Bootstrap + Custom CSS
 
-### `npm test`
+## 📦 Installation
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Prerequisites
 
-### `npm run build`
+- Node.js (v14.0.0 or higher)
+- npm (v6.0.0 or higher)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Setup
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+# Clone repository
+git clone https://github.com/yourusername/wings-hobbies.git
+cd rc-ecommerce
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+# Install dependencies
+npm install
 
-### `npm run eject`
+# Start development server
+npm start
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+The app will open at `http://localhost:3000`
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Build for Production
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```bash
+npm run build
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## 📁 Project Structure
 
-## Learn More
+```
+rc-ecommerce/
+├── public/
+│   ├── assets/              # Images and static files
+│   ├── index.html
+│   └── robots.txt
+├── src/
+│   ├── user/
+│   │   ├── components/      # Reusable components
+│   │   ├── context/         # Context providers
+│   │   ├── data/            # Mock data
+│   │   └── pages/           # Page components
+│   ├── App.js
+│   ├── index.js
+│   └── index.css
+├── documentation/           # Project documentation
+└── package.json
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 📖 Documentation
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Comprehensive documentation available in the `/documentation` folder:
 
-### Code Splitting
+- [Installation Guide](documentation/INSTALLATION.md)
+- [Architecture](documentation/ARCHITECTURE.md)
+- [Components](documentation/COMPONENTS.md)
+- [Context API](documentation/CONTEXT_API.md)
+- [Styling Guide](documentation/STYLING.md)
+- [Data Models](documentation/DATA_MODELS.md)
+- [API Reference](documentation/API_REFERENCE.md)
+- [Routing](documentation/ROUTING.md)
+- [Deployment](documentation/DEPLOYMENT.md)
+- [Troubleshooting](documentation/TROUBLESHOOTING.md)
+- [Contributing](documentation/CONTRIBUTING.md)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## 🎨 Key Features
 
-### Analyzing the Bundle Size
+### Product Management
+- 12 real RC airplane models from Indian retailers
+- Detailed specifications and features
+- High-quality product images
+- Price range: ₹1,999 - ₹32,999
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### Shopping Experience
+- Advanced search with filters
+- Price range slider
+- Category-based browsing
+- Product quick view
+- Recently viewed products
+- Social sharing
 
-### Making a Progressive Web App
+### User Features
+- User authentication (demo)
+- Profile management
+- Order history
+- Wishlist functionality
+- Shopping cart with vouchers
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### UI/UX
+- Dark theme with yellow accents
+- Smooth animations
+- Loading states with skeletons
+- Toast notifications
+- Mobile-responsive design
+- Sticky navigation
 
-### Advanced Configuration
+## 🌐 Live Demo
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+[View Live Demo](#) *(Add your deployment URL)*
 
-### Deployment
+## 📸 Screenshots
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+*(Add screenshots of your application)*
 
-### `npm run build` fails to minify
+## 🔧 Available Scripts
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```bash
+# Start development server
+npm start
+
+# Build for production
+npm run build
+
+# Run tests
+npm test
+
+# Eject configuration
+npm run eject
+```
+
+## 🚢 Deployment
+
+The app can be deployed to:
+- Vercel (Recommended)
+- Netlify
+- AWS S3 + CloudFront
+- Firebase Hosting
+- GitHub Pages
+
+See [Deployment Guide](documentation/DEPLOYMENT.md) for detailed instructions.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read the [Contributing Guide](documentation/CONTRIBUTING.md) first.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License.
+
+## 📧 Contact
+
+- **Email**: support@wingshobbies.com
+- **Phone**: +91 7985079854, +91 9889816016
+- **Location**: Lucknow, Uttar Pradesh, India
+
+## 🙏 Acknowledgments
+
+- Product data from [Bharat Hobby](https://www.bharathobby.com)
+- Product data from [Flying Machines](https://flyingmachines.in)
+- Images from [Unsplash](https://unsplash.com)
+- Icons from [Font Awesome](https://fontawesome.com)
+
+## 🔮 Future Enhancements
+
+- Payment gateway integration (Razorpay/Stripe)
+- Backend API with Node.js + MongoDB
+- Email notifications
+- SMS alerts
+- Real-time order tracking
+- Product recommendations
+- Multi-language support
+- AR product preview
+
+---
+
+Made with ❤️ by Wings Hobbies Team
