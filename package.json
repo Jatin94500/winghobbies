@@ -5,11 +5,9 @@
   "main": "src/backend/server.js",
   "scripts": {
     "start": "react-scripts start",
-    "start:server": "node src/backend/server.js",
-    "start:client": "react-scripts start",
-    "dev": "nodemon src/backend/server.js",
-    "build:client": "react-scripts build",
-    "test": "react-scripts test"
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.1.0",
