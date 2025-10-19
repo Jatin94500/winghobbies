@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { uploadAPI } from '../../utils/api';
+import AlertModal from '../../user/components/AlertModal';
 
 const BannerManagement = () => {
   const [banners, setBanners] = useState([]);
@@ -9,6 +10,7 @@ const BannerManagement = () => {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
+  const [alert, setAlert] = useState({ show: false, type: 'success', message: '' });
 
   useEffect(() => {
     fetchBanners();
@@ -37,10 +39,10 @@ const BannerManagement = () => {
       const response = await uploadAPI.single(file);
       if (response.data.success) {
         setImageUrl(response.data.url);
-        alert('Image uploaded!');
+        setAlert({ show: true, type: 'success', message: 'Image uploaded!' });
       }
     } catch (error) {
-      alert('Upload failed');
+      setAlert({ show: true, type: 'error', message: 'Upload failed' });
     } finally {
       setUploading(false);
     }
@@ -67,19 +69,19 @@ const BannerManagement = () => {
         await axios.put(`http://localhost:5000/api/banners/${editBanner._id}`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        alert('Banner updated!');
+        setAlert({ show: true, type: 'success', message: 'Banner updated!' });
       } else {
         await axios.post('http://localhost:5000/api/banners', formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        alert('Banner created!');
+        setAlert({ show: true, type: 'success', message: 'Banner created!' });
       }
       setShowModal(false);
       setEditBanner(null);
       setImageUrl('');
       fetchBanners();
     } catch (error) {
-      alert(error.response?.data?.error?.message || 'Failed to save');
+      setAlert({ show: true, type: 'error', message: error.response?.data?.error?.message || 'Failed to save' });
     }
   };
 
@@ -90,10 +92,10 @@ const BannerManagement = () => {
         await axios.delete(`http://localhost:5000/api/banners/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        alert('Deleted!');
+        setAlert({ show: true, type: 'success', message: 'Banner deleted!' });
         fetchBanners();
       } catch (error) {
-        alert('Failed to delete');
+        setAlert({ show: true, type: 'error', message: 'Failed to delete' });
       }
     }
   };
@@ -219,6 +221,7 @@ const BannerManagement = () => {
           </div>
         </div>
       )}
+      <AlertModal show={alert.show} type={alert.type} message={alert.message} onClose={() => setAlert({ ...alert, show: false })} />
     </div>
   );
 };

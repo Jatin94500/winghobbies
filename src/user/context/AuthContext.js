@@ -8,14 +8,17 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     try {
+      const token = localStorage.getItem('token');
       const storedUser = localStorage.getItem('user');
-      if (storedUser && storedUser !== 'undefined') {
+      
+      if (token && storedUser && storedUser !== 'undefined') {
         const parsed = JSON.parse(storedUser);
         setUser(parsed);
       }
     } catch (error) {
       console.error('Error loading user from localStorage:', error);
       localStorage.removeItem('user');
+      localStorage.removeItem('token');
     }
     setLoading(false);
   }, []);
@@ -47,16 +50,68 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    localStorage.removeItem('cart');
+    // Clear all localStorage
+    localStorage.clear();
   };
 
-  const updateProfile = (updatedData) => {
-    const updatedUser = { ...user, ...updatedData };
-    setUser(updatedUser);
-    localStorage.setItem('user', JSON.stringify(updatedUser));
+  const updateProfile = async (updatedData) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        // Update on backend
+        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/profile`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(updatedData)
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          const updatedUser = data.data || { ...user, ...updatedData };
+          setUser(updatedUser);
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+          return { success: true };
+        }
+      }
+      
+      // Fallback to local update
+      const updatedUser = { ...user, ...updatedData };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      return { success: true };
+    } catch (error) {
+      console.error('Profile update error:', error);
+      return { success: false, error: error.message };
+    }
+  };
+  
+  const refreshUser = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data) {
+            setUser(data.data);
+            localStorage.setItem('user', JSON.stringify(data.data));
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Refresh user error:', error);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, updateProfile, loading }}>
+    <AuthContext.Provider value={{ user, login, register, logout, updateProfile, refreshUser, loading }}>
       {children}
     </AuthContext.Provider>
   );

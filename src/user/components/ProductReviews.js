@@ -1,24 +1,64 @@
-import React, { useState } from 'react';
-import { getProductReviews, getAverageRating, getRatingDistribution } from '../data/reviews';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import AlertModal from './AlertModal';
 
 const ProductReviews = ({ productId }) => {
   const { user } = useAuth();
-  const [reviews] = useState(getProductReviews(productId));
+  const [reviews, setReviews] = useState([]);
   const [rating, setRating] = useState(5);
+  const [title, setTitle] = useState('');
   const [comment, setComment] = useState('');
-  const [showForm, setShowForm] = useState(false);
-  
-  const avgRating = getAverageRating(productId);
-  const distribution = getRatingDistribution(productId);
-  const totalReviews = reviews.length;
+  const [loading, setLoading] = useState(false);
+  const [alert, setAlert] = useState({ show: false, type: '', message: '' });
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    fetchReviews();
+  }, [productId]);
+
+  const fetchReviews = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/reviews/product/${productId}`);
+      const data = await response.json();
+      if (data.success) setReviews(data.data);
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Review submitted successfully!');
-    setComment('');
-    setRating(5);
-    setShowForm(false);
+    if (!user) {
+      setAlert({ show: true, type: 'warning', message: 'Please login to write a review' });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ productId, rating, title, comment })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setTitle('');
+        setComment('');
+        setRating(5);
+        fetchReviews();
+        setAlert({ show: true, type: 'success', message: 'Review submitted successfully!' });
+      } else {
+        setAlert({ show: true, type: 'error', message: data.error?.message || 'Failed to submit review' });
+      }
+    } catch (error) {
+      setAlert({ show: true, type: 'error', message: 'Error submitting review' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const renderStars = (rating) => {
@@ -29,120 +69,84 @@ const ProductReviews = ({ productId }) => {
 
   return (
     <div className="mt-5">
-      <h3 className="mb-4">Customer Reviews</h3>
-      
-      {/* Rating Summary */}
-      <div className="card border-0 shadow-sm mb-4">
-        <div className="card-body">
-          <div className="row align-items-center">
-            <div className="col-md-4 text-center border-end">
-              <h1 className="display-3 mb-0">{avgRating}</h1>
-              <div className="mb-2">{renderStars(Math.round(avgRating))}</div>
-              <p className="text-muted mb-0">{totalReviews} reviews</p>
-            </div>
-            <div className="col-md-8">
-              {[5, 4, 3, 2, 1].map(star => (
-                <div key={star} className="d-flex align-items-center mb-2">
-                  <span className="me-2" style={{ width: '60px' }}>{star} <i className="fas fa-star text-warning"></i></span>
-                  <div className="progress flex-grow-1" style={{ height: '8px' }}>
-                    <div 
-                      className="progress-bar bg-warning" 
-                      style={{ width: `${totalReviews ? (distribution[star] / totalReviews) * 100 : 0}%` }}
-                    ></div>
-                  </div>
-                  <span className="ms-2 text-muted" style={{ width: '40px' }}>{distribution[star]}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+      <h4 className="mb-4">Customer Reviews</h4>
 
-      {/* Write Review Button */}
-      {user && !showForm && (
-        <button className="btn btn-warning fw-bold mb-4" onClick={() => setShowForm(true)}>
-          <i className="fas fa-edit me-2"></i>Write a Review
-        </button>
-      )}
-
-      {/* Review Form */}
-      {showForm && (
-        <div className="card border-0 shadow-sm mb-4">
+      {/* Write Review */}
+      {user && (
+        <div className="card mb-4">
           <div className="card-body">
-            <h5 className="mb-3">Write Your Review</h5>
+            <h5>Write a Review</h5>
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
                 <label className="form-label">Rating</label>
                 <div>
-                  {[1, 2, 3, 4, 5].map(star => (
-                    <i 
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <i
                       key={star}
-                      className={`fas fa-star fs-4 me-1 cursor-pointer ${star <= rating ? 'text-warning' : 'text-muted'}`}
-                      onClick={() => setRating(star)}
+                      className={`fas fa-star fa-2x me-2 ${star <= rating ? 'text-warning' : 'text-muted'}`}
                       style={{ cursor: 'pointer' }}
+                      onClick={() => setRating(star)}
                     ></i>
                   ))}
                 </div>
               </div>
               <div className="mb-3">
-                <label className="form-label">Your Review</label>
-                <textarea 
-                  className="form-control" 
-                  rows="4" 
+                <label className="form-label">Title</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Comment</label>
+                <textarea
+                  className="form-control"
+                  rows="3"
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   required
-                  placeholder="Share your experience with this product..."
                 ></textarea>
               </div>
-              <button type="submit" className="btn btn-warning fw-bold me-2">Submit Review</button>
-              <button type="button" className="btn btn-outline-secondary" onClick={() => setShowForm(false)}>Cancel</button>
+              <button type="submit" className="btn btn-warning" disabled={loading}>
+                {loading ? 'Submitting...' : 'Submit Review'}
+              </button>
             </form>
           </div>
         </div>
       )}
 
       {/* Reviews List */}
-      <div className="reviews-list">
-        {reviews.length === 0 ? (
-          <div className="text-center py-5 text-muted">
-            <i className="fas fa-comments fs-1 mb-3 d-block"></i>
-            <p>No reviews yet. Be the first to review this product!</p>
-          </div>
-        ) : (
-          reviews.map(review => (
-            <div key={review.id} className="card border-0 shadow-sm mb-3">
-              <div className="card-body">
-                <div className="d-flex align-items-start">
-                  <img 
-                    src={review.avatar} 
-                    alt={review.user} 
-                    className="rounded-circle me-3"
-                    style={{ width: '50px', height: '50px', objectFit: 'cover' }}
-                  />
-                  <div className="flex-grow-1">
-                    <div className="d-flex justify-content-between align-items-start mb-2">
-                      <div>
-                        <h6 className="mb-0">
-                          {review.user}
-                          {review.verified && (
-                            <span className="badge bg-success ms-2" style={{ fontSize: '0.7rem' }}>
-                              <i className="fas fa-check-circle me-1"></i>Verified Purchase
-                            </span>
-                          )}
-                        </h6>
-                        <small className="text-muted">{new Date(review.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</small>
-                      </div>
-                      <div>{renderStars(review.rating)}</div>
-                    </div>
-                    <p className="mb-0">{review.comment}</p>
-                  </div>
+      {reviews.length === 0 ? (
+        <p className="text-muted">No reviews yet. Be the first to review!</p>
+      ) : (
+        reviews.map((review) => (
+          <div key={review._id} className="card mb-3">
+            <div className="card-body">
+              <div className="d-flex justify-content-between align-items-start">
+                <div>
+                  <h6 className="mb-1">{review.user?.name || 'Anonymous'}</h6>
+                  <div className="mb-2">{renderStars(review.rating)}</div>
+                  <h6 className="fw-bold">{review.title}</h6>
+                  <p className="mb-0">{review.comment}</p>
                 </div>
+                <small className="text-muted">
+                  {new Date(review.createdAt).toLocaleDateString()}
+                </small>
               </div>
             </div>
-          ))
-        )}
-      </div>
+          </div>
+        ))
+      )}
+      
+      <AlertModal 
+        show={alert.show}
+        type={alert.type}
+        message={alert.message}
+        onClose={() => setAlert({ ...alert, show: false })}
+      />
     </div>
   );
 };

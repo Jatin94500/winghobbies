@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { productAPI } from '../../utils/api';
+import ProductReviews from '../components/ProductReviews';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -415,6 +416,9 @@ const ProductDetail = () => {
 
             {activeTab === 'reviews' && (
               <div>
+                <ProductReviews productId={id} />
+                <hr className="my-5" />
+                <h5 className="fw-bold mb-4">All Reviews</h5>
                 <div className="row mb-4">
                   <div className="col-md-3">
                     <div className="text-center p-4 border rounded">

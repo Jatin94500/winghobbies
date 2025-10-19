@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { productAPI } from '../../utils/api';
+import AlertModal from '../../user/components/AlertModal';
 
 const TrendingProducts = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [alert, setAlert] = useState({ show: false, type: 'success', message: '' });
 
   useEffect(() => {
     fetchProducts();
@@ -27,17 +29,17 @@ const TrendingProducts = () => {
   const toggleTrending = async (productId, currentStatus) => {
     const token = localStorage.getItem('token');
     if (!token) {
-      alert('Please login as admin first');
+      setAlert({ show: true, type: 'error', message: 'Please login as admin first' });
       return;
     }
 
     try {
       await productAPI.update(productId, { trending: !currentStatus });
-      alert(currentStatus ? 'Removed from Trending!' : 'Added to Trending!');
+      setAlert({ show: true, type: 'success', message: currentStatus ? 'Removed from Trending!' : 'Added to Trending!' });
       await fetchProducts();
     } catch (error) {
       console.error('Error updating product:', error);
-      alert(error.response?.data?.error?.message || 'Failed to update product');
+      setAlert({ show: true, type: 'error', message: error.response?.data?.error?.message || 'Failed to update product' });
     }
   };
 
@@ -147,6 +149,7 @@ const TrendingProducts = () => {
           </div>
         </div>
       </div>
+      <AlertModal show={alert.show} type={alert.type} message={alert.message} onClose={() => setAlert({ ...alert, show: false })} />
     </div>
   );
 };

@@ -10,9 +10,46 @@ const ChatWidget = () => {
   const quickReplies = [
     'Track my order',
     'Return policy',
-    'Product warranty',
-    'Payment options'
+    'Shipping info',
+    'Apply coupon'
   ];
+
+  const getBotResponse = (userInput) => {
+    const input = userInput.toLowerCase();
+    
+    if (input.includes('track') || input.includes('order')) {
+      return 'To track your order, go to Profile → My Orders. You can view real-time status updates there. Need your order ID?';
+    }
+    if (input.includes('return') || input.includes('refund')) {
+      return 'We offer 7-day returns on most products. Go to My Orders → Select Order → Request Return. Refunds are processed within 5-7 business days.';
+    }
+    if (input.includes('warranty')) {
+      return 'All RC models come with 6-month manufacturer warranty. Extended warranty available at checkout. Check product details for specific coverage.';
+    }
+    if (input.includes('payment') || input.includes('pay')) {
+      return 'We accept Credit/Debit Cards, UPI, Net Banking, and Cash on Delivery. All payments are secure and encrypted.';
+    }
+    if (input.includes('shipping') || input.includes('delivery')) {
+      return 'Free shipping on orders above ₹999! Standard delivery: 3-5 days. Express delivery available. Track your shipment in My Orders.';
+    }
+    if (input.includes('cancel')) {
+      return 'You can cancel orders before shipping. Go to My Orders → Select Order → Cancel. Refund will be processed automatically.';
+    }
+    if (input.includes('coupon') || input.includes('discount')) {
+      return 'Check our homepage for active deals! Apply coupon codes at checkout. First-time users get 10% off with code: FIRST10';
+    }
+    if (input.includes('contact') || input.includes('support')) {
+      return 'Call: +91 7985079854 | Email: support@rcmodels.com | Live chat: Mon-Sat, 9 AM - 6 PM';
+    }
+    if (input.includes('stock') || input.includes('available')) {
+      return 'Product availability is shown on each product page. Out of stock items can be added to wishlist for restock notifications.';
+    }
+    if (input.includes('compare')) {
+      return 'Use the Compare feature to view specs side-by-side! Click the compare icon on product cards, then visit Compare page.';
+    }
+    
+    return 'I can help with: Orders, Returns, Payments, Shipping, Warranty, Coupons. Or call +91 7985079854 for immediate assistance!';
+  };
 
   const handleSend = () => {
     if (!input.trim()) return;
@@ -25,17 +62,18 @@ const ChatWidget = () => {
     };
     
     setMessages([...messages, userMsg]);
+    const userQuestion = input;
     setInput('');
 
     setTimeout(() => {
       const botMsg = {
         id: messages.length + 2,
-        text: 'Thanks for your message! Our team will respond shortly. For immediate assistance, call +91 7985079854.',
+        text: getBotResponse(userQuestion),
         sender: 'bot',
         time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
       };
       setMessages(prev => [...prev, botMsg]);
-    }, 1000);
+    }, 800);
   };
 
   const handleQuickReply = (reply) => {

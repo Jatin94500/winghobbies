@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: wing-hobbies-backend
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd src/backend && npm install
+    startCommand: cd src/backend && node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+    healthCheckPath: /api/health
+
+  - type: web
+    name: wing-hobbies-frontend
+    env: static
+    region: oregon
+    plan: free
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://wing-hobbies-backend.onrender.com

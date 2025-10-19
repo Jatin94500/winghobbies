@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import AlertModal from '../../user/components/AlertModal';
 
 const CategoryManagement = () => {
   const [categories, setCategories] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editCategory, setEditCategory] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [alert, setAlert] = useState({ show: false, type: 'success', message: '' });
 
   useEffect(() => {
     fetchCategories();
@@ -39,18 +41,18 @@ const CategoryManagement = () => {
         await axios.put(`http://localhost:5000/api/categories/${editCategory._id}`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        alert('Category updated!');
+        setAlert({ show: true, type: 'success', message: 'Category updated!' });
       } else {
         await axios.post('http://localhost:5000/api/categories', formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        alert('Category created!');
+        setAlert({ show: true, type: 'success', message: 'Category created!' });
       }
       setShowModal(false);
       setEditCategory(null);
       fetchCategories();
     } catch (error) {
-      alert(error.response?.data?.error?.message || 'Failed to save');
+      setAlert({ show: true, type: 'error', message: error.response?.data?.error?.message || 'Failed to save' });
     }
   };
 
@@ -61,10 +63,10 @@ const CategoryManagement = () => {
         await axios.delete(`http://localhost:5000/api/categories/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        alert('Deleted!');
+        setAlert({ show: true, type: 'success', message: 'Category deleted!' });
         fetchCategories();
       } catch (error) {
-        alert('Failed to delete');
+        setAlert({ show: true, type: 'error', message: 'Failed to delete' });
       }
     }
   };
@@ -144,6 +146,7 @@ const CategoryManagement = () => {
           </div>
         </div>
       )}
+      <AlertModal show={alert.show} type={alert.type} message={alert.message} onClose={() => setAlert({ ...alert, show: false })} />
     </div>
   );
 };

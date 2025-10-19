@@ -46,7 +46,7 @@ const CartPage = () => {
                     </thead>
                     <tbody>
                       {cartItems.map((item) => (
-                        <tr key={item.id}>
+                        <tr key={item._id || item.id || item.productId}>
                           <td className="py-3">
                             <div className="d-flex align-items-center">
                               <img 
@@ -57,7 +57,7 @@ const CartPage = () => {
                               />
                               <div>
                                 <h6 className="mb-1 fw-bold">{item.name}</h6>
-                                <small className="text-muted">Model #{item.id}</small>
+                                <small className="text-muted">Model #{item._id || item.id || item.productId}</small>
                               </div>
                             </div>
                           </td>
@@ -68,7 +68,7 @@ const CartPage = () => {
                             <div className="input-group" style={{width: '130px'}}>
                               <button 
                                 className="btn btn-outline-dark btn-sm"
-                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                onClick={() => updateQuantity(item._id || item.id || item.productId, item.quantity - 1)}
                               >
                                 <i className="fas fa-minus"></i>
                               </button>
@@ -80,7 +80,7 @@ const CartPage = () => {
                               />
                               <button 
                                 className="btn btn-outline-dark btn-sm"
-                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                onClick={() => updateQuantity(item._id || item.id || item.productId, item.quantity + 1)}
                               >
                                 <i className="fas fa-plus"></i>
                               </button>
@@ -92,7 +92,7 @@ const CartPage = () => {
                           <td className="py-3 align-middle">
                             <button 
                               className="btn btn-outline-danger btn-sm"
-                              onClick={() => removeFromCart(item.id)}
+                              onClick={() => removeFromCart(item._id || item.id || item.productId)}
                             >
                               <i className="fas fa-trash"></i>
                             </button>

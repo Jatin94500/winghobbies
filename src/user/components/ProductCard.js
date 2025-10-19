@@ -40,7 +40,9 @@ const ProductCard = ({ product }) => {
             <i className="fas fa-heart"></i>
           </button>
           {product.discount > 0 && (
-            <span className="badge bg-success position-absolute top-0 start-0 m-2">{product.discount}% OFF</span>
+            <span className="badge bg-danger position-absolute top-0 start-0 m-2 fs-6">
+              <i className="fas fa-tag me-1"></i>{product.discount}% OFF
+            </span>
           )}
         </div>
         
@@ -55,11 +57,16 @@ const ProductCard = ({ product }) => {
             </div>
           </div>
           
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <div>
+          <div className="mb-3">
+            <div className="d-flex align-items-center gap-2">
               <span className="h5 text-warning mb-0">₹{product.price?.toLocaleString()}</span>
-              {product.originalPrice && (
-                <small className="text-muted text-decoration-line-through ms-2">₹{product.originalPrice.toLocaleString()}</small>
+              {product.originalPrice && product.originalPrice > product.price && (
+                <>
+                  <small className="text-muted text-decoration-line-through">₹{product.originalPrice.toLocaleString()}</small>
+                  <span className="badge bg-success">
+                    Save ₹{(product.originalPrice - product.price).toLocaleString()}
+                  </span>
+                </>
               )}
             </div>
           </div>

@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "healthy-basis-475512-v4",
+  "private_key_id": "28cac9c60b6c073cca645ce59bfd04d2579ac98c",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCSh1S6mtIBSbFF\naYd8H8u2pTcWcbq/dFG7sm2ysbEFz84PiTqeN6qeB+4WkeO8/7n85T/LkJOdt99x\noQxNKv+7+LOtzy7BEUTe8Qw6rV04sLvAD98KaBoPMkacAknRmeQ8fo2RWLPwBrw+\ng2Eqv0UKDmvwCHGVr5eGbmejXZNcYrRSX3d1+iHvt9bP2ahbIVMAs3syj/9CnKKQ\nkHa7Ty+hlSnWBHSm6Dg95kzs56ks0ygX4UJhC3B2OQFXlpEw/umveyR4efN12MUG\nj9qD9u9MUMe7dMRdhPAu5G3BV+3Xncb98IZOrsKulwtrXSo0P2gH7OfctRuvYAnc\nfGAytet/AgMBAAECggEAC8oBSlLgLZlZFBLFrfoS66WG9UfTih7Y3/H0UH8VFTjJ\nxUc5ukwT7qCzCl7U2g/LI3/rA5JPcM4/7IZUFTYDRa41//hzibYSz/XIkZoBg5Oj\nRMnMx1YRLq18BTD2m9C2uRqc15exlntm6YgBfoJ4ErM5V6JznQ2icn7vLgjT191m\npWL/8r74kcsWI1iopZH+qllFOsR/UX5m/psA92WpmedwJmPiUVW8Qw1k17s0z32j\nhNSFN/K9C2xGgGDskdODwxr1R2DIbR0sKNiM4qc1IiinUdWKW+4myh5WJlhWBcVc\nk6Z0uh1VFkmKhxjvGEihg8MULtyRT6mtRkyR4cLW2QKBgQDFILSRh/JlrUp7QceH\n9DkyxwIWFHGaVcCPMIN9xrNgh5qgAHtSnn1Ob1isAptsAAyCyheDpJzHgkCg4x9q\nJIVPkBX5GhsaVPbBTzqjESf47OAqr230JYY2d7KX72pZTCCtxz5AB9a08gEynG+b\ngCEy6FpKn6AcB2eWQKibXu7F9wKBgQC+ShkC3LnN4PATZUgn4kRvBdHQo7goi3K0\nd1jWbsGMl4E1HQJByFP8DEcnd7D+9KVKd4geRwGbdMaoCRlc88Iygm+lU/YiOgLc\nrB+nZYiMxfkltbfga3+uhxlaRhpC7xidKnnnrBPViIpyS3Zlf2nNfzii23FAvD20\nRXiZEzcEuQKBgEZau9dM68g6JuECwxHUqi1jNW1n8nugq07vg556Mj77ZsZAJcOA\n6Tv7JWyOqaXMBqsPMYE8WPAjnqlNJkMdsa6JwC3dkVq+hCrN+iGE1/1RnVfesKF4\nWwRJiCYNvqkMMIWVHLSBl7GQxbioeHTJMBAZOVB01BHs2p2XihWZtiJVAoGAU41l\nfgQ88VEbGOkXzatkMPt1LQ82BVd1fhgJQd5PzdOYQCIEo626cqlRdNrxNIFnMlNZ\nyTGUWxXjRFT6df3x/wuWyhkbsduW9h39qBrE4krrIsuveTK6VX+seh7d2RXy0M+d\nx0OfUdsqLxVDXz2az0hVLez8xVfiIA2A7nWpasECgYA9WopA4T3XFmGfgfAub9ut\n9ro/wL8A2HdZ/zfyjZE86pDwJsJVYCS47UmnPVD/Hc0Q6tS+nZw/auOYgVjlxQOj\nr916O3UlUJbQNC71eRA0ZD4z/xxmFBSD7cfm1tjEtlrRME5cAxPZ9W8yB9WNhdf0\nl3StKS1l8EVPvQlJo4RKEA==\n-----END PRIVATE KEY-----\n",
+  "client_email": "wing-hobbies-uploader@healthy-basis-475512-v4.iam.gserviceaccount.com",
+  "client_id": "117651701041081857646",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/wing-hobbies-uploader%40healthy-basis-475512-v4.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

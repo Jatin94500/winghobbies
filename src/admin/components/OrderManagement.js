@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { orderAPI } from '../../utils/api';
+import AlertModal from '../../user/components/AlertModal';
 
 const OrderManagement = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
+  const [alert, setAlert] = useState({ show: false, type: 'success', message: '' });
 
   useEffect(() => {
     fetchOrders();
@@ -24,10 +26,10 @@ const OrderManagement = () => {
   const handleStatusUpdate = async (orderId, newStatus) => {
     try {
       await orderAPI.updateStatus(orderId, newStatus);
-      alert('Order status updated successfully!');
+      setAlert({ show: true, type: 'success', message: 'Order status updated successfully!' });
       fetchOrders();
     } catch (error) {
-      alert('Failed to update order status');
+      setAlert({ show: true, type: 'error', message: 'Failed to update order status' });
     }
   };
 
@@ -114,9 +116,9 @@ const OrderManagement = () => {
         try {
           const importedData = JSON.parse(event.target.result);
           console.log('Imported orders:', importedData);
-          alert('Orders imported successfully!');
+          setAlert({ show: true, type: 'success', message: 'Orders imported successfully!' });
         } catch (error) {
-          alert('Error importing orders. Please check file format.');
+          setAlert({ show: true, type: 'error', message: 'Error importing orders. Please check file format.' });
         }
       };
       reader.readAsText(file);
@@ -194,7 +196,7 @@ const OrderManagement = () => {
                         </select>
                       </td>
                       <td>
-                        <button className="btn btn-sm btn-outline-primary">
+                        <button className="btn btn-sm btn-outline-primary" onClick={() => window.open(`/order/${order.orderId}`, '_blank')}>
                           <i className="fas fa-eye"></i>
                         </button>
                       </td>
@@ -206,6 +208,7 @@ const OrderManagement = () => {
           </div>
         </div>
       </div>
+      <AlertModal show={alert.show} type={alert.type} message={alert.message} onClose={() => setAlert({ ...alert, show: false })} />
     </div>
   );
 };

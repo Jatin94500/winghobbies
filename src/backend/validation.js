@@ -24,9 +24,9 @@ exports.validateOrder = [
   body('shipping.name').trim().notEmpty().withMessage('Shipping name is required'),
   body('shipping.address').trim().notEmpty().withMessage('Shipping address is required'),
   body('shipping.city').trim().notEmpty().withMessage('City is required'),
-  body('shipping.pincode').matches(/^[1-9][0-9]{5}$/).withMessage('Invalid pincode'),
-  body('shipping.phone').matches(/^[6-9]\d{9}$/).withMessage('Invalid phone number'),
-  body('payment.method').isIn(['cod', 'card', 'upi']).withMessage('Invalid payment method'),
+  body('shipping.pincode').optional().trim(),
+  body('shipping.phone').trim().notEmpty().withMessage('Phone number is required'),
+  body('payment.method').isIn(['cod', 'card', 'upi', 'netbanking', 'wallet', 'emi']).withMessage('Invalid payment method'),
   validate
 ];
 

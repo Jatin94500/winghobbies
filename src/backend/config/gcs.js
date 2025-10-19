@@ -1,13 +1,15 @@
 const { Storage } = require('@google-cloud/storage');
 
-const storage = new Storage({
-  projectId: process.env.GCP_PROJECT_ID,
-  credentials: {
-    client_email: process.env.GCP_CLIENT_EMAIL,
-    private_key: process.env.GCP_PRIVATE_KEY.replace(/\\n/g, '\n')
-  }
-});
+let storage, bucket;
 
-const bucket = storage.bucket(process.env.GCP_BUCKET_NAME);
+try {
+  storage = new Storage();
+  bucket = storage.bucket(process.env.GCP_BUCKET_NAME || 'wing-hobbies-products');
+  console.log('✅ Google Cloud Storage initialized');
+} catch (error) {
+  console.log('⚠️  GCS not configured, using local storage');
+  storage = null;
+  bucket = null;
+}
 
 module.exports = { storage, bucket };

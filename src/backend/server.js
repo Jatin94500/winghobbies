@@ -9,6 +9,14 @@ require('dotenv').config();
 
 const app = express();
 
+// Ensure a session secret is provided. In production you should set JWT_SECRET
+// as a Cloud Run environment variable. If it's missing we use a fallback to
+// avoid crashes during startup (not secure for production).
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
+if (!process.env.JWT_SECRET) {
+  console.warn('⚠️  WARNING: JWT_SECRET not set. Using insecure fallback secret. Set JWT_SECRET in your Cloud Run service environment variables.');
+}
+
 // Security Middleware
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' }
@@ -32,8 +40,21 @@ app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 
 // Middleware
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'https://healthy-basis-475512-v4.web.app',
+  'https://healthy-basis-475512-v4.firebaseapp.com'
+];
+
 app.use(cors({ 
-  origin: ['http://localhost:3000', 'http://localhost:3001'], 
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Allow all in production for now
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -41,24 +62,45 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(session({
-  secret: process.env.JWT_SECRET,
+  secret: JWT_SECRET,
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true
+  }
 }));
 app.use(passport.initialize());
 app.use(passport.session());
 
-// MongoDB Connection
+// MongoDB Connection with auto-reconnect
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/wing-hobbies';
 console.log('Connecting to MongoDB...');
-mongoose.connect(MONGODB_URI)
+
+mongoose.connect(MONGODB_URI, {
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+})
 .then(() => {
   console.log('✅ MongoDB Atlas Connected Successfully');
   console.log('Database:', mongoose.connection.name);
 })
 .catch(err => {
   console.error('❌ MongoDB Connection Error:', err.message);
-  process.exit(1);
+  console.log('⚠️  Server will keep running. Check your internet connection.');
+});
+
+// Handle MongoDB connection events
+mongoose.connection.on('disconnected', () => {
+  console.log('⚠️  MongoDB disconnected. Attempting to reconnect...');
+});
+
+mongoose.connection.on('reconnected', () => {
+  console.log('✅ MongoDB reconnected successfully');
+});
+
+mongoose.connection.on('error', (err) => {
+  console.error('❌ MongoDB error:', err.message);
 });
 
 // Serve uploaded files
@@ -77,10 +119,19 @@ app.use('/api/email', require('./routes/email'));
 app.use('/api/payment-methods', require('./routes/payment-methods'));
 app.use('/api/categories', require('./routes/categories'));
 app.use('/api/banners', require('./routes/banners'));
+app.use('/api/invoice', require('./routes/invoice'));
+app.use('/api/recommendations', require('./routes/recommendations'));
+app.use('/api/inventory', require('./routes/inventory'));
 
 // Health Check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Wing Hobbies API is running' });
+  const health = {
+    status: 'OK',
+    message: 'Wing Hobbies API is running',
+    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    timestamp: new Date().toISOString()
+  };
+  res.json(health);
 });
 
 // 404 Handler
@@ -104,8 +155,58 @@ app.use((err, req, res, next) => {
   });
 });
 
+// Global error handlers - Production Grade
+process.on('unhandledRejection', (err) => {
+  console.error('❌ Unhandled Promise Rejection:', err);
+  console.error('Stack:', err.stack);
+  // Log to monitoring service in production
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('❌ Uncaught Exception:', err);
+  console.error('Stack:', err.stack);
+  // Log to monitoring service in production
+  // Graceful shutdown
+  server.close(() => {
+    console.log('Server closed due to uncaught exception');
+    process.exit(1);
+  });
+  // Force exit after 10 seconds
+  setTimeout(() => {
+    console.error('Forcing shutdown...');
+    process.exit(1);
+  }, 10000);
+});
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📡 CORS enabled for: http://localhost:3000, http://localhost:3001`);
+  console.log(`📡 CORS enabled for multiple origins`);
+  console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`📦 Products API: http://localhost:${PORT}/api/products`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log('\n✨ Backend is ready!\n');
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('\n⚠️  SIGTERM received. Closing server gracefully...');
+  server.close(() => {
+    console.log('✅ Server closed');
+    mongoose.connection.close(false, () => {
+      console.log('✅ MongoDB connection closed');
+      process.exit(0);
+    });
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('\n⚠️  SIGINT received. Closing server gracefully...');
+  server.close(() => {
+    console.log('✅ Server closed');
+    mongoose.connection.close(false, () => {
+      console.log('✅ MongoDB connection closed');
+      process.exit(0);
+    });
+  });
 });

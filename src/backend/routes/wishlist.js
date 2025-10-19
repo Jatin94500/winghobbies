@@ -1,47 +1,74 @@
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../auth');
-
-// In-memory wishlist storage
-const wishlists = new Map();
+const User = require('../models/User');
 
 // @route   GET /api/wishlist
 // @desc    Get user wishlist
 // @access  Private
-router.get('/', protect, (req, res) => {
-  const wishlist = wishlists.get(req.user._id.toString()) || [];
-  res.json({ success: true, data: wishlist });
+router.get('/', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    const wishlist = user.wishlist || [];
+    res.json({ success: true, data: wishlist });
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
 });
 
 // @route   POST /api/wishlist
 // @desc    Add item to wishlist
 // @access  Private
-router.post('/', protect, (req, res) => {
-  const { productId, name, price, image } = req.body;
-  const userId = req.user._id.toString();
-  
-  let wishlist = wishlists.get(userId) || [];
-  const exists = wishlist.find(item => item.productId === productId);
-  
-  if (!exists) {
-    wishlist.push({ productId, name, price, image, addedAt: new Date() });
-    wishlists.set(userId, wishlist);
+router.post('/', protect, async (req, res) => {
+  try {
+    const { productId } = req.body;
+    const user = await User.findById(req.user._id);
+    
+    if (!user.wishlist) user.wishlist = [];
+    
+    const exists = user.wishlist.find(item => item.toString() === productId);
+    
+    if (!exists) {
+      user.wishlist.push(productId);
+      await user.save();
+    }
+    
+    res.json({ success: true, message: 'Added to wishlist', data: user.wishlist });
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
   }
-  
-  res.json({ success: true, message: 'Added to wishlist', data: wishlist });
 });
 
 // @route   DELETE /api/wishlist/:productId
 // @desc    Remove item from wishlist
 // @access  Private
-router.delete('/:productId', protect, (req, res) => {
-  const userId = req.user._id.toString();
-  let wishlist = wishlists.get(userId) || [];
-  
-  wishlist = wishlist.filter(item => item.productId !== req.params.productId);
-  wishlists.set(userId, wishlist);
-  
-  res.json({ success: true, message: 'Removed from wishlist', data: wishlist });
+router.delete('/:productId', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    
+    if (user.wishlist) {
+      user.wishlist = user.wishlist.filter(item => item.toString() !== req.params.productId);
+      await user.save();
+    }
+    
+    res.json({ success: true, message: 'Removed from wishlist', data: user.wishlist });
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
+});
+
+// @route   DELETE /api/wishlist
+// @desc    Clear wishlist
+// @access  Private
+router.delete('/', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    user.wishlist = [];
+    await user.save();
+    res.json({ success: true, message: 'Wishlist cleared' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: { message: error.message } });
+  }
 });
 
 module.exports = router;

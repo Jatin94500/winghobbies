@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { productAPI } from '../../utils/api';
+import AlertModal from '../../user/components/AlertModal';
 
 const TodaysDeals = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [alert, setAlert] = useState({ show: false, type: 'success', message: '' });
 
   useEffect(() => {
     fetchProducts();
@@ -27,17 +29,17 @@ const TodaysDeals = () => {
   const toggleFeatured = async (productId, currentStatus) => {
     const token = localStorage.getItem('token');
     if (!token) {
-      alert('Please login as admin first');
+      setAlert({ show: true, type: 'error', message: 'Please login as admin first' });
       return;
     }
 
     try {
       await productAPI.update(productId, { featured: !currentStatus });
-      alert(currentStatus ? 'Removed from Today\'s Deals!' : 'Added to Today\'s Deals!');
+      setAlert({ show: true, type: 'success', message: currentStatus ? 'Removed from Today\'s Deals!' : 'Added to Today\'s Deals!' });
       await fetchProducts();
     } catch (error) {
       console.error('Error updating product:', error);
-      alert(error.response?.data?.error?.message || 'Failed to update product');
+      setAlert({ show: true, type: 'error', message: error.response?.data?.error?.message || 'Failed to update product' });
     }
   };
 
@@ -147,6 +149,7 @@ const TodaysDeals = () => {
           </div>
         </div>
       </div>
+      <AlertModal show={alert.show} type={alert.type} message={alert.message} onClose={() => setAlert({ ...alert, show: false })} />
     </div>
   );
 };

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { orderAPI } from '../../utils/api';
+import { generateInvoice } from '../../utils/invoiceGenerator';
+import AlertModal from '../components/AlertModal';
 
 const orderStatuses = {
   pending: { label: 'Pending', color: 'warning', icon: 'fa-clock' },
@@ -17,6 +19,7 @@ const OrdersPage = () => {
   const [filter, setFilter] = useState('all');
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [alert, setAlert] = useState({ show: false, type: '', message: '' });
 
   useEffect(() => {
     if (!user) {
@@ -29,9 +32,11 @@ const OrdersPage = () => {
   const fetchOrders = async () => {
     try {
       const response = await orderAPI.getAll();
+      console.log('Orders response:', response.data);
       setOrders(response.data.data || []);
     } catch (error) {
       console.error('Error fetching orders:', error);
+      setOrders([]);
     } finally {
       setLoading(false);
     }
@@ -127,7 +132,7 @@ const OrdersPage = () => {
                   </div>
                 ) : (
                   filteredOrders.map((order) => (
-                    <div key={order.id} className="card border-0 shadow-sm mb-3">
+                    <div key={order._id || order.orderId} className="card border-0 shadow-sm mb-3">
                       <div className="card-body">
                         <div className="row align-items-center mb-3">
                           <div className="col-md-6">
@@ -151,7 +156,7 @@ const OrdersPage = () => {
 
                         {/* Order Items */}
                         {order.items.map((item, idx) => (
-                          <div key={idx} className="d-flex align-items-center mb-3 pb-3 border-bottom">
+                          <div key={item._id || `${order._id}-${idx}`} className="d-flex align-items-center mb-3 pb-3 border-bottom">
                             <img 
                               src={item.image || 'https://via.placeholder.com/80'} 
                               alt={item.name} 
@@ -184,8 +189,14 @@ const OrdersPage = () => {
                             >
                               <i className="fas fa-eye me-1"></i>View Details
                             </Link>
+                            <button 
+                              className="btn btn-warning btn-sm me-2"
+                              onClick={() => generateInvoice(order, setAlert)}
+                            >
+                              <i className="fas fa-file-invoice me-1"></i>Invoice
+                            </button>
                             {order.status === 'delivered' && (
-                              <button className="btn btn-warning btn-sm">
+                              <button className="btn btn-success btn-sm">
                                 <i className="fas fa-redo me-1"></i>Reorder
                               </button>
                             )}
@@ -200,6 +211,13 @@ const OrdersPage = () => {
           </div>
         </div>
       </div>
+      
+      <AlertModal 
+        show={alert.show}
+        type={alert.type}
+        message={alert.message}
+        onClose={() => setAlert({ ...alert, show: false })}
+      />
     </div>
   );
 };

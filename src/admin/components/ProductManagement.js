@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { productAPI, uploadAPI } from '../../utils/api';
+import AlertModal from '../../user/components/AlertModal';
 
 const ProductManagement = () => {
   const [products, setProducts] = useState([]);
@@ -9,6 +10,7 @@ const ProductManagement = () => {
   const [productImages, setProductImages] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [priceCalc, setPriceCalc] = useState({ original: 0, discount: 0, sale: 0 });
+  const [alert, setAlert] = useState({ show: false, type: 'success', message: '' });
 
   const calculateSalePrice = (original, discount) => {
     const originalPrice = parseFloat(original) || 0;
@@ -63,13 +65,13 @@ const ProductManagement = () => {
       console.log('Upload response:', response.data);
       if (response.data.success) {
         setProductImages([...productImages, ...response.data.urls]);
-        alert('Images uploaded successfully!');
+        setAlert({ show: true, type: 'success', message: 'Images uploaded successfully!' });
       } else {
-        alert(response.data.message || 'Upload failed');
+        setAlert({ show: true, type: 'error', message: response.data.message || 'Upload failed' });
       }
     } catch (error) {
       console.error('Upload error:', error);
-      alert(error.response?.data?.message || 'Failed to upload images. Check console for details.');
+      setAlert({ show: true, type: 'error', message: error.response?.data?.message || 'Failed to upload images' });
     } finally {
       setUploading(false);
     }
@@ -88,19 +90,19 @@ const ProductManagement = () => {
   const handleDelete = async (id) => {
     const token = localStorage.getItem('token');
     if (!token) {
-      alert('Please login as admin first');
+      setAlert({ show: true, type: 'error', message: 'Please login as admin first' });
       return;
     }
 
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
         await productAPI.delete(id);
-        alert('Product deleted successfully!');
+        setAlert({ show: true, type: 'success', message: 'Product deleted successfully!' });
         fetchProducts();
       } catch (error) {
         console.error('Delete error:', error);
         console.error('Error response:', error.response?.data);
-        alert(error.response?.data?.error?.message || 'Failed to delete product');
+        setAlert({ show: true, type: 'error', message: error.response?.data?.error?.message || 'Failed to delete product' });
       }
     }
   };
@@ -108,7 +110,7 @@ const ProductManagement = () => {
   const handleSave = async () => {
     const token = localStorage.getItem('token');
     if (!token) {
-      alert('Please login as admin first');
+      setAlert({ show: true, type: 'error', message: 'Please login as admin first' });
       return;
     }
 
@@ -154,11 +156,11 @@ const ProductManagement = () => {
       console.log('Saving product:', formData);
       if (editProduct) {
         await productAPI.update(editProduct._id, formData);
-        alert('Product updated successfully!');
+        setAlert({ show: true, type: 'success', message: 'Product updated successfully!' });
       } else {
         const response = await productAPI.create(formData);
         console.log('Create response:', response.data);
-        alert('Product created successfully!');
+        setAlert({ show: true, type: 'success', message: 'Product created successfully!' });
       }
       setShowModal(false);
       setEditProduct(null);
@@ -167,7 +169,7 @@ const ProductManagement = () => {
     } catch (error) {
       console.error('Save error:', error);
       console.error('Error response:', error.response?.data);
-      alert(error.response?.data?.error?.message || 'Failed to save product. Check console.');
+      setAlert({ show: true, type: 'error', message: error.response?.data?.error?.message || 'Failed to save product' });
     }
   };
 
@@ -193,15 +195,16 @@ const ProductManagement = () => {
                   <th>Name</th>
                   <th>Category</th>
                   <th>Price</th>
+                  <th>Discount</th>
                   <th>Stock</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan="7" className="text-center py-4">Loading products...</td></tr>
+                  <tr><td colSpan="8" className="text-center py-4">Loading products...</td></tr>
                 ) : products.length === 0 ? (
-                  <tr><td colSpan="7" className="text-center py-4">No products found. Add your first product!</td></tr>
+                  <tr><td colSpan="8" className="text-center py-4">No products found. Add your first product!</td></tr>
                 ) : (
                   products.map((product) => (
                     <tr key={product._id}>
@@ -218,7 +221,19 @@ const ProductManagement = () => {
                       <td>
                         <span className="badge bg-primary">{product.category}</span>
                       </td>
-                      <td className="fw-bold text-success">₹{product.price}</td>
+                      <td>
+                        <div className="fw-bold text-success">₹{product.price?.toLocaleString()}</div>
+                        {product.originalPrice && (
+                          <small className="text-muted text-decoration-line-through">₹{product.originalPrice?.toLocaleString()}</small>
+                        )}
+                      </td>
+                      <td>
+                        {product.discount > 0 ? (
+                          <span className="badge bg-success">{product.discount}% OFF</span>
+                        ) : (
+                          <span className="badge bg-secondary">No Discount</span>
+                        )}
+                      </td>
                       <td>
                         <span className={`badge ${product.stock > 0 ? 'bg-success' : 'bg-danger'}`}>
                           {product.stock > 0 ? `${product.stock} in stock` : 'Out of Stock'}
@@ -409,6 +424,7 @@ const ProductManagement = () => {
           </div>
         </div>
       )}
+      <AlertModal show={alert.show} type={alert.type} message={alert.message} onClose={() => setAlert({ ...alert, show: false })} />
     </div>
   );
 };

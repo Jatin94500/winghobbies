@@ -8,8 +8,7 @@ const orderSchema = new mongoose.Schema({
   },
   orderId: {
     type: String,
-    unique: true,
-    required: true
+    unique: true
   },
   items: [{
     product: {
@@ -37,7 +36,7 @@ const orderSchema = new mongoose.Schema({
   payment: {
     method: {
       type: String,
-      enum: ['cod', 'card', 'upi'],
+      enum: ['cod', 'card', 'upi', 'netbanking', 'wallet', 'emi'],
       required: true
     },
     status: {
@@ -67,11 +66,22 @@ const orderSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Generate order ID
-orderSchema.pre('save', async function(next) {
+// Generate order ID - Format: WH-YYYYMMDD-XXXX
+orderSchema.pre('validate', async function(next) {
   if (!this.orderId) {
-    const count = await mongoose.model('Order').countDocuments();
-    this.orderId = `ORD-${String(count + 1).padStart(6, '0')}`;
+    const today = new Date();
+    const dateStr = today.getFullYear() + 
+                    String(today.getMonth() + 1).padStart(2, '0') + 
+                    String(today.getDate()).padStart(2, '0');
+    
+    // Count today's orders
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+    const todayCount = await this.constructor.countDocuments({
+      createdAt: { $gte: startOfDay, $lte: endOfDay }
+    });
+    
+    this.orderId = `WH-${dateStr}-${String(todayCount + 1).padStart(4, '0')}`;
   }
   next();
 });

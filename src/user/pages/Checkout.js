@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { orderAPI } from '../../utils/api';
 import axios from 'axios';
+import AlertModal from '../components/AlertModal';
 
 const Checkout = () => {
-  const { cartItems, getCartTotal } = useCart();
+  const { cartItems, getCartTotal, clearCart } = useCart();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [paymentMethods, setPaymentMethods] = useState([]);
@@ -14,6 +15,7 @@ const Checkout = () => {
     email: '', name: '', phone: '', address: '', city: '', zip: '', country: '',
     cardNumber: '', cardName: '', expiry: '', cvv: ''
   });
+  const [alert, setAlert] = useState({ show: false, type: 'success', message: '' });
 
   useEffect(() => {
     fetchPaymentMethods();
@@ -43,7 +45,7 @@ const Checkout = () => {
       try {
         const orderData = {
           items: cartItems.map(item => ({
-            product: item.id,
+            product: item.productId || item._id || item.id,
             name: item.name,
             price: item.price,
             quantity: item.quantity,
@@ -54,7 +56,7 @@ const Checkout = () => {
             address: formData.address,
             city: formData.city,
             state: formData.country,
-            pincode: formData.zip,
+            pincode: formData.zip || '000000',
             phone: formData.phone
           },
           payment: {
@@ -69,13 +71,17 @@ const Checkout = () => {
           }
         };
 
+        console.log('Order data:', orderData);
         const response = await orderAPI.create(orderData);
         if (response.data.success) {
-          alert(`Order placed successfully! Order ID: ${response.data.data.orderId}`);
-          navigate('/orders');
+          // Clear cart after successful order
+          await clearCart();
+          // Force reload to sync with backend
+          window.location.href = '/orders';
         }
       } catch (error) {
-        alert(error.response?.data?.error?.message || 'Failed to place order');
+        console.error('Order error:', error.response?.data);
+        setAlert({ show: true, type: 'error', message: error.response?.data?.error?.message || error.response?.data?.error?.errors?.[0]?.msg || 'Failed to place order' });
       }
     }
   };
@@ -267,7 +273,7 @@ const Checkout = () => {
             </div>
             <div className="card-body">
               {cartItems.map(item => (
-                <div key={item.id} className="d-flex justify-content-between mb-2">
+                <div key={item._id || item.id || item.productId} className="d-flex justify-content-between mb-2">
                   <span>{item.name} x{item.quantity}</span>
                   <span>₹{(item.price * item.quantity).toFixed(2)}</span>
                 </div>
@@ -290,6 +296,7 @@ const Checkout = () => {
           </div>
         </div>
       </div>
+      <AlertModal show={alert.show} type={alert.type} message={alert.message} onClose={() => setAlert({ ...alert, show: false })} />
     </div>
   );
 };

@@ -19,6 +19,9 @@ const upload = multer({
 // Upload to GCS
 const uploadToGCS = (file) => {
   return new Promise((resolve, reject) => {
+    if (!bucket) {
+      return reject(new Error('Cloud Storage not configured'));
+    }
     const blob = bucket.file(`products/${Date.now()}-${file.originalname}`);
     const blobStream = blob.createWriteStream({
       resumable: false,
