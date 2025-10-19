@@ -1,13 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { products } from '../data/products';
+import { productAPI } from '../../utils/api';
 
 const ComparePage = () => {
   const [selectedProducts, setSelectedProducts] = useState([null, null, null]);
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const response = await productAPI.getAll();
+      if (response.data.success) {
+        const productsData = response.data.data;
+        const productsList = productsData.products || productsData || [];
+        setProducts(productsList);
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+  };
 
   const handleSelectProduct = (index, productId) => {
     const newSelected = [...selectedProducts];
-    newSelected[index] = products.find(p => p.id === parseInt(productId)) || null;
+    newSelected[index] = products.find(p => p._id === productId) || null;
     setSelectedProducts(newSelected);
   };
 
@@ -39,12 +57,12 @@ const ComparePage = () => {
                       <th key={index} className="text-center">
                         <select 
                           className="form-select"
-                          value={selectedProducts[index]?.id || ''}
+                          value={selectedProducts[index]?._id || ''}
                           onChange={(e) => handleSelectProduct(index, e.target.value)}
                         >
                           <option value="">Select Product {index + 1}</option>
                           {products.map(p => (
-                            <option key={p.id} value={p.id}>{p.name}</option>
+                            <option key={p._id} value={p._id}>{p.name}</option>
                           ))}
                         </select>
                       </th>
@@ -57,7 +75,7 @@ const ComparePage = () => {
                     {selectedProducts.map((product, index) => (
                       <td key={index} className="text-center">
                         {product ? (
-                          <img src={product.image} alt={product.name} style={{height: '150px', objectFit: 'cover'}} className="img-fluid" />
+                          <img src={product.images?.[0] || 'https://via.placeholder.com/150'} alt={product.name} style={{height: '150px', objectFit: 'cover'}} className="img-fluid" />
                         ) : (
                           <div className="text-muted py-5">No product selected</div>
                         )}
@@ -69,7 +87,7 @@ const ComparePage = () => {
                     {selectedProducts.map((product, index) => (
                       <td key={index} className="text-center">
                         {product ? (
-                          <Link to={`/product/${product.id}`} className="text-decoration-none fw-semibold">
+                          <Link to={`/product/${product._id}`} className="text-decoration-none fw-semibold">
                             {product.name}
                           </Link>
                         ) : '-'}
@@ -99,7 +117,7 @@ const ComparePage = () => {
                     {selectedProducts.map((product, index) => (
                       <td key={index} className="text-center">
                         {product && (
-                          <Link to={`/product/${product.id}`} className="btn btn-warning fw-bold">
+                          <Link to={`/product/${product._id}`} className="btn btn-warning fw-bold">
                             View Details
                           </Link>
                         )}

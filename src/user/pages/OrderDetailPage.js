@@ -1,19 +1,51 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { mockOrders, orderStatuses } from '../data/orders';
+import { orderAPI } from '../../utils/api';
+
+const orderStatuses = {
+  pending: { label: 'Pending', color: 'warning', icon: 'fa-clock' },
+  processing: { label: 'Processing', color: 'info', icon: 'fa-cog' },
+  shipped: { label: 'Shipped', color: 'primary', icon: 'fa-shipping-fast' },
+  delivered: { label: 'Delivered', color: 'success', icon: 'fa-check-circle' },
+  cancelled: { label: 'Cancelled', color: 'danger', icon: 'fa-times-circle' }
+};
 
 const OrderDetailPage = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
   
-  if (!user) {
-    navigate('/login');
-    return null;
-  }
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    fetchOrder();
+  }, [id, user, navigate]);
 
-  const order = mockOrders.find(o => o.id === id);
+  const fetchOrder = async () => {
+    try {
+      const response = await orderAPI.getOne(id);
+      if (response.data.success) {
+        setOrder(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching order:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="container py-5 text-center">
+        <div className="spinner-border text-warning" role="status"></div>
+      </div>
+    );
+  }
 
   if (!order) {
     return (

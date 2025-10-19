@@ -1322,3 +1322,48 @@ footer a:hover {
 .timeline-content p {
   margin-bottom: 0;
 }
+
+
+/* ===== PRODUCT DETAIL PAGE ===== */
+.hover-zoom {
+  transition: transform 0.5s ease;
+}
+
+.hover-zoom:hover {
+  transform: scale(1.05);
+}
+
+.nav-tabs .nav-link {
+  color: #6c757d;
+  border: none;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+  padding: 12px 20px;
+  font-weight: 500;
+}
+
+.nav-tabs .nav-link:hover {
+  color: #ffc107;
+  border-bottom-color: #ffc107;
+}
+
+.nav-tabs .nav-link.active {
+  color: #ffc107;
+  background: transparent;
+  border-bottom-color: #ffc107;
+  font-weight: 600;
+}
+
+.tab-content {
+  animation: fadeInUp 0.5s ease;
+}
+
+.progress {
+  background-color: #e9ecef;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  transition: width 0.6s ease;
+}

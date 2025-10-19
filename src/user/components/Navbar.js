@@ -1,120 +1,91 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import SearchBar from './SearchBar';
 
 const Navbar = () => {
   const { cartItems } = useCart();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
   const itemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
-      setSearchQuery('');
-    }
-  };
-
-  const closeNavbar = () => {
-    const navbarCollapse = document.getElementById('navbarNav');
-    if (navbarCollapse && navbarCollapse.classList.contains('show')) {
-      const bsCollapse = new window.bootstrap.Collapse(navbarCollapse, { toggle: false });
-      bsCollapse.hide();
-    }
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow-lg sticky-top py-2" style={{zIndex: 1030}}>
-      <div className="container-fluid px-3">
-        <Link to="/" className="navbar-brand fw-bold d-flex align-items-center" style={{fontSize: '1.25rem'}}>
-          <img src="/assets/logo1.svg" alt="Wing Hobbies" height="35" className="me-2" />
+    <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow-lg sticky-top">
+      <div className="container-fluid">
+        <Link to="/" className="navbar-brand fw-bold fs-2 me-4 d-flex align-items-center">
+          <img src="/assets/logo1.svg" alt="Wing Hobbies" height="40" className="me-2" />
           <span className="text-warning">Wing</span> Hobbies
         </Link>
         
-        <button 
-          className="navbar-toggler" 
-          type="button" 
-          data-bs-toggle="collapse" 
-          data-bs-target="#navbarNav" 
-          aria-controls="navbarNav" 
-          aria-expanded="false" 
-          aria-label="Toggle navigation"
-        >
+        <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
           <span className="navbar-toggler-icon"></span>
         </button>
         
         <div className="collapse navbar-collapse" id="navbarNav">
-          {/* Mobile Search */}
-          <form className="d-lg-none my-2" onSubmit={handleSearch}>
-            <div className="input-group input-group-sm">
-              <input 
-                className="form-control" 
-                type="search" 
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <button className="btn btn-warning" type="submit">
-                <i className="fas fa-search"></i>
-              </button>
-            </div>
-          </form>
-          
-          <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+          <ul className="navbar-nav me-auto">
             <li className="nav-item">
-              <Link className="nav-link px-3" to="/" onClick={closeNavbar}>Home</Link>
+              <Link className="nav-link fw-semibold" to="/">Home</Link>
             </li>
             <li className="nav-item dropdown">
-              <a className="nav-link dropdown-toggle px-3" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style={{cursor: 'pointer'}}>
-                Categories
+              <a className="nav-link dropdown-toggle fw-semibold" href="#" role="button" data-bs-toggle="dropdown">
+                Airplanes
               </a>
               <ul className="dropdown-menu">
-                <li><Link className="dropdown-item" to="/products" onClick={closeNavbar}>All Products</Link></li>
-                <li><hr className="dropdown-divider" /></li>
-                <li><Link className="dropdown-item" to="/products?category=planes" onClick={closeNavbar}>RC Planes</Link></li>
-                <li><Link className="dropdown-item" to="/products?category=drones" onClick={closeNavbar}>Drones</Link></li>
-                <li><Link className="dropdown-item" to="/products?category=cars" onClick={closeNavbar}>RC Cars</Link></li>
-                <li><Link className="dropdown-item" to="/products?category=helicopters" onClick={closeNavbar}>Helicopters</Link></li>
+                <li><Link className="dropdown-item" to="/category/airplanes/electric">Electric</Link></li>
+                <li><Link className="dropdown-item" to="/category/airplanes/nitro-gas">Nitro / Gas</Link></li>
+                <li><Link className="dropdown-item" to="/category/airplanes/turbine">Turbine</Link></li>
+                <li><Link className="dropdown-item" to="/category/airplanes/accessories">Accessories</Link></li>
+                <li><Link className="dropdown-item" to="/category/airplanes/propellers">Propellers</Link></li>
               </ul>
             </li>
             <li className="nav-item">
-              <Link className="nav-link px-3" to="/products" onClick={closeNavbar}>Products</Link>
+              <Link className="nav-link fw-semibold" to="/category/helicopters">Heli/Drones</Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link px-3" to="/about" onClick={closeNavbar}>About</Link>
+              <Link className="nav-link fw-semibold" to="/category/cars-bikes">Cars/Bikes</Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link px-3" to="/faq" onClick={closeNavbar}>FAQ</Link>
+              <Link className="nav-link fw-semibold" to="/category/boats">Boats</Link>
+            </li>
+            <li className="nav-item dropdown">
+              <a className="nav-link dropdown-toggle fw-semibold" href="#" role="button" data-bs-toggle="dropdown">
+                More
+              </a>
+              <ul className="dropdown-menu">
+                <li><Link className="dropdown-item" to="/category/engines">Engines</Link></li>
+                <li><Link className="dropdown-item" to="/category/motors-escs">Motors/ESCs/Acc.</Link></li>
+                <li><Link className="dropdown-item" to="/category/batteries-chargers">Batteries/Chargers</Link></li>
+                <li><Link className="dropdown-item" to="/category/radios-servos">Radios/Servos</Link></li>
+                <li><Link className="dropdown-item" to="/category/accessories-materials">Accessories/Materials</Link></li>
+                <li><Link className="dropdown-item" to="/category/connectors-wires">Connectors & Wires</Link></li>
+                <li><Link className="dropdown-item" to="/category/propellers">Propellers</Link></li>
+                <li><hr className="dropdown-divider" /></li>
+                <li><Link className="dropdown-item" to="/specials">⭐ Specials</Link></li>
+                <li><Link className="dropdown-item" to="/new-products">🆕 New Products</Link></li>
+                <li><Link className="dropdown-item" to="/featured">🏆 Featured</Link></li>
+              </ul>
             </li>
             <li className="nav-item">
-              <Link className="nav-link px-3" to="/contact" onClick={closeNavbar}>Contact</Link>
+              <Link className="nav-link fw-semibold" to="/products">All Products</Link>
             </li>
           </ul>
           
-          <div className="d-flex align-items-center gap-2">
-            <form className="d-none d-lg-flex" onSubmit={handleSearch} style={{minWidth: '250px'}}>
-              <div className="input-group input-group-sm">
-                <input 
-                  className="form-control" 
-                  type="search" 
-                  placeholder="Search products..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <button className="btn btn-warning" type="submit">
-                  <i className="fas fa-search"></i>
-                </button>
-              </div>
-            </form>
+          <div className="d-flex align-items-center">
+            <div className="me-3 d-none d-lg-block">
+              <SearchBar />
+            </div>
             
-            <Link to="/cart" className="btn btn-outline-warning btn-sm position-relative" onClick={closeNavbar}>
+            <Link to="/cart" className="btn btn-outline-warning position-relative me-2">
               <i className="fas fa-shopping-cart"></i>
               <span className="d-none d-md-inline ms-1">Cart</span>
               {itemCount > 0 && (
-                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{fontSize: '0.65rem'}}>
+                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                   {itemCount}
                 </span>
               )}
@@ -122,20 +93,20 @@ const Navbar = () => {
             
             {user ? (
               <div className="dropdown">
-                <button className="btn btn-outline-warning btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  <img src={user.avatar} alt={user.name} className="rounded-circle me-1" width="20" height="20" />
-                  <span className="d-none d-md-inline">{user.name.split(' ')[0]}</span>
+                <button className="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                  <img src={user.avatar || 'https://ui-avatars.com/api/?name=User&background=ffc107&color=000'} alt="User" className="rounded-circle me-1" style={{ width: '24px', height: '24px' }} />
+                  <span className="d-none d-md-inline">{user.name}</span>
                 </button>
-                <ul className="dropdown-menu dropdown-menu-end" style={{right: 0, left: 'auto'}}>
-                  <li><Link className="dropdown-item" to="/profile"><i className="fas fa-user me-2"></i>My Profile</Link></li>
-                  <li><Link className="dropdown-item" to="/orders"><i className="fas fa-shopping-bag me-2"></i>My Orders</Link></li>
+                <ul className="dropdown-menu dropdown-menu-end">
+                  <li><Link className="dropdown-item" to="/profile"><i className="fas fa-user me-2"></i>Profile</Link></li>
+                  <li><Link className="dropdown-item" to="/orders"><i className="fas fa-shopping-bag me-2"></i>Orders</Link></li>
                   <li><Link className="dropdown-item" to="/wishlist"><i className="fas fa-heart me-2"></i>Wishlist</Link></li>
                   <li><hr className="dropdown-divider" /></li>
-                  <li><Link className="dropdown-item text-danger" to="/profile"><i className="fas fa-sign-out-alt me-2"></i>Logout</Link></li>
+                  <li><button className="dropdown-item" onClick={handleLogout}><i className="fas fa-sign-out-alt me-2"></i>Logout</button></li>
                 </ul>
               </div>
             ) : (
-              <Link to="/login" className="btn btn-outline-light btn-sm" onClick={closeNavbar}>
+              <Link to="/login" className="btn btn-outline-light">
                 <i className="fas fa-user"></i>
                 <span className="d-none d-md-inline ms-1">Login</span>
               </Link>

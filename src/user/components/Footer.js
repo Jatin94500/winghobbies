@@ -8,7 +8,7 @@ const Footer = () => {
         <div className="row g-4">
           <div className="col-lg-4 col-md-6">
             <h5 className="fw-bold mb-3">
-              <span className="text-warning">Wings</span> Hobbies
+              <span className="text-warning">Wing</span> Hobbies
             </h5>
             <p className="text-light">
               Your trusted destination for premium RC models, drones, and accessories. 
@@ -66,7 +66,7 @@ const Footer = () => {
         <div className="row align-items-center">
           <div className="col-md-6">
             <p className="text-light mb-0">
-              © 2025 Wings Hobbies. All rights reserved.
+              © 2025 Wing Hobbies. All rights reserved.
             </p>
           </div>
           <div className="col-md-6 text-md-end">

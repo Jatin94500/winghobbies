@@ -1,21 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { mockOrders, orderStatuses } from '../data/orders';
+import { orderAPI } from '../../utils/api';
+
+const orderStatuses = {
+  pending: { label: 'Pending', color: 'warning', icon: 'fa-clock' },
+  processing: { label: 'Processing', color: 'info', icon: 'fa-cog' },
+  shipped: { label: 'Shipped', color: 'primary', icon: 'fa-shipping-fast' },
+  delivered: { label: 'Delivered', color: 'success', icon: 'fa-check-circle' },
+  cancelled: { label: 'Cancelled', color: 'danger', icon: 'fa-times-circle' }
+};
 
 const OrdersPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [filter, setFilter] = useState('all');
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  if (!user) {
-    navigate('/login');
-    return null;
-  }
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    fetchOrders();
+  }, [user, navigate]);
+
+  const fetchOrders = async () => {
+    try {
+      const response = await orderAPI.getAll();
+      setOrders(response.data.data || []);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!user) return null;
 
   const filteredOrders = filter === 'all' 
-    ? mockOrders 
-    : mockOrders.filter(order => order.status === filter);
+    ? orders 
+    : orders.filter(order => order.status === filter);
 
   return (
     <div className="bg-light py-5" style={{minHeight: '80vh'}}>
@@ -87,7 +113,11 @@ const OrdersPage = () => {
                 </div>
 
                 {/* Orders List */}
-                {filteredOrders.length === 0 ? (
+                {loading ? (
+                  <div className="text-center py-5">
+                    <div className="spinner-border text-warning" role="status"></div>
+                  </div>
+                ) : filteredOrders.length === 0 ? (
                   <div className="text-center py-5">
                     <i className="fas fa-box-open display-1 text-muted mb-3"></i>
                     <h4 className="text-muted">No orders found</h4>
@@ -101,10 +131,10 @@ const OrdersPage = () => {
                       <div className="card-body">
                         <div className="row align-items-center mb-3">
                           <div className="col-md-6">
-                            <h6 className="fw-bold mb-1">Order #{order.id}</h6>
+                            <h6 className="fw-bold mb-1">Order #{order.orderId}</h6>
                             <small className="text-muted">
                               <i className="fas fa-calendar me-1"></i>
-                              {new Date(order.date).toLocaleDateString('en-IN', { 
+                              {new Date(order.createdAt).toLocaleDateString('en-IN', { 
                                 year: 'numeric', 
                                 month: 'long', 
                                 day: 'numeric' 
@@ -120,10 +150,10 @@ const OrdersPage = () => {
                         </div>
 
                         {/* Order Items */}
-                        {order.items.map((item) => (
-                          <div key={item.id} className="d-flex align-items-center mb-3 pb-3 border-bottom">
+                        {order.items.map((item, idx) => (
+                          <div key={idx} className="d-flex align-items-center mb-3 pb-3 border-bottom">
                             <img 
-                              src={item.image} 
+                              src={item.image || 'https://via.placeholder.com/80'} 
                               alt={item.name} 
                               className="rounded me-3"
                               style={{width: '80px', height: '80px', objectFit: 'cover'}}
@@ -141,21 +171,15 @@ const OrdersPage = () => {
                         {/* Order Summary */}
                         <div className="row">
                           <div className="col-md-6">
-                            <p className="mb-1 small"><strong>Payment:</strong> {order.payment}</p>
-                            <p className="mb-1 small"><strong>Shipping:</strong> {order.address}</p>
-                            {order.tracking && (
-                              <p className="mb-0 small">
-                                <strong>Tracking:</strong> 
-                                <span className="text-primary ms-1">{order.tracking}</span>
-                              </p>
-                            )}
+                            <p className="mb-1 small"><strong>Payment:</strong> {order.payment?.method?.toUpperCase()}</p>
+                            <p className="mb-1 small"><strong>Shipping:</strong> {order.shipping?.city}</p>
                           </div>
                           <div className="col-md-6 text-md-end">
                             <h5 className="fw-bold text-dark mb-3">
-                              Total: <span className="text-warning">₹{order.total.toLocaleString()}</span>
+                              Total: <span className="text-warning">₹{order.summary?.total?.toLocaleString()}</span>
                             </h5>
                             <Link 
-                              to={`/order/${order.id}`} 
+                              to={`/order/${order.orderId}`} 
                               className="btn btn-outline-warning btn-sm me-2"
                             >
                               <i className="fas fa-eye me-1"></i>View Details

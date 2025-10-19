@@ -7,24 +7,25 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    try {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser && storedUser !== 'undefined') {
+        const parsed = JSON.parse(storedUser);
+        setUser(parsed);
+      }
+    } catch (error) {
+      console.error('Error loading user from localStorage:', error);
+      localStorage.removeItem('user');
     }
     setLoading(false);
   }, []);
 
-  const login = (email, password) => {
-    // Mock login - replace with actual API call
-    const mockUser = {
-      id: 1,
-      name: 'John Doe',
-      email: email,
-      phone: '+91 9876543210',
-      avatar: 'https://ui-avatars.com/api/?name=John+Doe&background=ffc107&color=000'
-    };
-    setUser(mockUser);
-    localStorage.setItem('user', JSON.stringify(mockUser));
+  const login = (userData, token) => {
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+    if (token) {
+      localStorage.setItem('token', token);
+    }
     return { success: true };
   };
 
@@ -45,6 +46,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
   };
 
   const updateProfile = (updatedData) => {
