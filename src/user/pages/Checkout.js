@@ -16,6 +16,10 @@ const Checkout = () => {
     cardNumber: '', cardName: '', expiry: '', cvv: ''
   });
   const [alert, setAlert] = useState({ show: false, type: 'success', message: '' });
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [discount, setDiscount] = useState(0);
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
 
   useEffect(() => {
     fetchPaymentMethods();
@@ -35,6 +39,92 @@ const Checkout = () => {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const applyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setApplyingCoupon(true);
+    try {
+      const token = localStorage.getItem('token');
+      const { data } = await axios.post('http://localhost:5000/api/coupons/validate', 
+        { code: couponCode, cartTotal: getCartTotal() },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setAppliedCoupon(data.data);
+      setDiscount(data.data.discount);
+      setAlert({ show: true, type: 'success', message: `Coupon applied! You saved ₹${data.data.discount}` });
+    } catch (error) {
+      setAlert({ show: true, type: 'error', message: error.response?.data?.error?.message || 'Invalid coupon' });
+    } finally {
+      setApplyingCoupon(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setDiscount(0);
+    setCouponCode('');
+  };
+
+  const loadRazorpay = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handleRazorpayPayment = async (orderData) => {
+    const res = await loadRazorpay();
+    if (!res) {
+      setAlert({ show: true, type: 'error', message: 'Razorpay SDK failed to load' });
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const { data } = await axios.post('http://localhost:5000/api/razorpay/create-order', 
+        { amount: getCartTotal() - discount },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const options = {
+        key: 'rzp_test_dummy',
+        amount: data.data.amount,
+        currency: 'INR',
+        name: 'Wing Hobbies',
+        description: 'Order Payment',
+        order_id: data.data.id,
+        handler: async (response) => {
+          try {
+            await axios.post('http://localhost:5000/api/razorpay/verify-payment', response, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            orderData.payment.status = 'paid';
+            const orderResponse = await orderAPI.create(orderData);
+            if (orderResponse.data.success) {
+              await clearCart();
+              window.location.href = '/orders';
+            }
+          } catch (error) {
+            setAlert({ show: true, type: 'error', message: 'Payment verification failed' });
+          }
+        },
+        prefill: {
+          name: formData.name,
+          email: formData.email,
+          contact: formData.phone
+        },
+        theme: { color: '#ffc107' }
+      };
+
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.open();
+    } catch (error) {
+      setAlert({ show: true, type: 'error', message: 'Payment failed' });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -66,18 +156,22 @@ const Checkout = () => {
           summary: {
             subtotal: parseFloat(getCartTotal()),
             shipping: 0,
-            discount: 0,
-            total: parseFloat(getCartTotal())
-          }
+            discount: discount,
+            total: parseFloat(getCartTotal()) - discount
+          },
+          voucherCode: appliedCoupon?.code
         };
 
         console.log('Order data:', orderData);
-        const response = await orderAPI.create(orderData);
-        if (response.data.success) {
-          // Clear cart after successful order
-          await clearCart();
-          // Force reload to sync with backend
-          window.location.href = '/orders';
+        
+        if (selectedPayment === 'card' || selectedPayment === 'upi' || selectedPayment === 'netbanking') {
+          await handleRazorpayPayment(orderData);
+        } else {
+          const response = await orderAPI.create(orderData);
+          if (response.data.success) {
+            await clearCart();
+            window.location.href = '/orders';
+          }
         }
       } catch (error) {
         console.error('Order error:', error.response?.data);
@@ -287,10 +381,43 @@ const Checkout = () => {
                 <span>Shipping</span>
                 <span className="text-success">Free</span>
               </div>
+              {discount > 0 && (
+                <div className="d-flex justify-content-between mb-2 text-success">
+                  <span>Discount ({appliedCoupon?.code})</span>
+                  <span>-₹{discount.toFixed(2)}</span>
+                </div>
+              )}
+              
+              {/* Coupon Code */}
+              <div className="mb-3">
+                <label className="form-label small">Have a coupon?</label>
+                {appliedCoupon ? (
+                  <div className="input-group">
+                    <input type="text" className="form-control" value={appliedCoupon.code} disabled />
+                    <button className="btn btn-outline-danger" onClick={removeCoupon}>
+                      <i className="fas fa-times"></i>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="input-group">
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      placeholder="Enter code" 
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    />
+                    <button className="btn btn-warning" onClick={applyCoupon} disabled={applyingCoupon}>
+                      {applyingCoupon ? 'Applying...' : 'Apply'}
+                    </button>
+                  </div>
+                )}
+              </div>
+              
               <hr />
               <div className="d-flex justify-content-between fw-bold fs-5">
                 <span>Total</span>
-                <span className="text-warning">₹{getCartTotal().toFixed(2)}</span>
+                <span className="text-warning">₹{(getCartTotal() - discount).toFixed(2)}</span>
               </div>
             </div>
           </div>

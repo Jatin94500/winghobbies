@@ -22,6 +22,15 @@ router.post('/', protect, validateOrder, async (req, res) => {
       timeline: [{ status: 'pending' }]
     });
 
+    // Increment coupon usage
+    if (voucherCode) {
+      const Coupon = require('../models/Coupon');
+      await Coupon.findOneAndUpdate(
+        { code: voucherCode.toUpperCase() },
+        { $inc: { usedCount: 1 } }
+      );
+    }
+
     // Clear user cart after order
     try {
       const user = await User.findById(req.user._id);
@@ -33,18 +42,84 @@ router.post('/', protect, validateOrder, async (req, res) => {
       console.log('Cart clear error:', err.message);
     }
 
-    // Send order confirmation email (optional)
+    // Send order confirmation email with invoice
     try {
       const { sendEmail, emailTemplates } = require('../config/email');
-      if (emailTemplates && emailTemplates.orderConfirmation) {
-        await sendEmail({
-          to: req.user.email,
-          subject: `Order Confirmation - ${order.orderId}`,
-          html: emailTemplates.orderConfirmation(order)
-        });
-      }
+      const PDFDocument = require('pdfkit');
+      
+      // Generate invoice PDF
+      const doc = new PDFDocument({ margin: 50 });
+      const chunks = [];
+      
+      doc.on('data', chunk => chunks.push(chunk));
+      doc.on('end', async () => {
+        const pdfBuffer = Buffer.concat(chunks);
+        
+        if (emailTemplates && emailTemplates.orderConfirmation) {
+          await sendEmail({
+            to: req.user.email,
+            subject: `Order Confirmation - ${order.orderId}`,
+            html: emailTemplates.orderConfirmation(order),
+            attachments: [{
+              filename: `Invoice-${order.orderId}.pdf`,
+              content: pdfBuffer,
+              contentType: 'application/pdf'
+            }]
+          });
+        }
+      });
+      
+      // Generate PDF content
+      doc.fillColor('#ffc107').rect(0, 0, doc.page.width, 80).fill();
+      doc.fillColor('#000').fontSize(24).font('Helvetica-Bold').text('WING HOBBIES', 0, 30, { align: 'center' });
+      doc.fontSize(10).font('Helvetica').text('RC Models & Accessories', 0, 55, { align: 'center' });
+      doc.moveDown(2);
+      doc.fontSize(16).font('Helvetica-Bold').text('TAX INVOICE', 50, 100);
+      doc.fontSize(10).font('Helvetica');
+      doc.text(`Invoice No: ${order.orderId}`, 50, 130);
+      doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString('en-IN')}`, 50, 145);
+      doc.text(`Payment: ${order.payment?.method?.toUpperCase() || 'N/A'}`, 50, 160);
+      doc.font('Helvetica-Bold').text('BILL TO:', 350, 130);
+      doc.font('Helvetica');
+      doc.text(order.shipping?.name || 'N/A', 350, 145);
+      doc.text(order.shipping?.address || '', 350, 160, { width: 200 });
+      doc.text(`${order.shipping?.city}, ${order.shipping?.state}`, 350, 175);
+      doc.text(`PIN: ${order.shipping?.pincode}`, 350, 190);
+      const tableTop = 240;
+      doc.font('Helvetica-Bold');
+      doc.text('#', 50, tableTop);
+      doc.text('Product', 80, tableTop);
+      doc.text('Qty', 350, tableTop);
+      doc.text('Price', 400, tableTop);
+      doc.text('Total', 480, tableTop);
+      doc.moveTo(50, tableTop + 15).lineTo(550, tableTop + 15).stroke();
+      doc.font('Helvetica');
+      let y = tableTop + 25;
+      order.items.forEach((item, i) => {
+        doc.text(i + 1, 50, y);
+        doc.text(item.name, 80, y, { width: 250 });
+        doc.text(item.quantity, 350, y);
+        doc.text(`Rs. ${item.price.toLocaleString('en-IN')}`, 400, y);
+        doc.text(`Rs. ${(item.price * item.quantity).toLocaleString('en-IN')}`, 480, y);
+        y += 25;
+      });
+      y += 20;
+      doc.moveTo(350, y).lineTo(550, y).stroke();
+      y += 15;
+      doc.text('Subtotal:', 350, y);
+      doc.text(`Rs. ${order.summary?.subtotal?.toLocaleString('en-IN')}`, 480, y);
+      y += 20;
+      doc.text('Shipping:', 350, y);
+      doc.text(order.summary?.shipping === 0 ? 'FREE' : `Rs. ${order.summary?.shipping?.toLocaleString('en-IN')}`, 480, y);
+      y += 20;
+      doc.font('Helvetica-Bold').fontSize(12);
+      doc.text('TOTAL:', 350, y);
+      doc.text(`Rs. ${order.summary?.total?.toLocaleString('en-IN')}`, 480, y);
+      doc.fontSize(8).font('Helvetica').fillColor('#666');
+      doc.text('Thank you for shopping with Wing Hobbies!', 0, 700, { align: 'center' });
+      doc.end();
     } catch (err) {
-      console.log('Email not configured:', err.message);
+      console.log('Email/Invoice error:', err.message);
     }
 
     res.status(201).json({

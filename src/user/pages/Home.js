@@ -7,6 +7,7 @@ import Toast from '../components/Toast';
 import Sidebar from '../components/Sidebar';
 import Banner from '../components/Banner';
 import SkeletonCard from '../components/SkeletonCard';
+import SEO from '../components/SEO';
 
 const Home = () => {
   const { addToCart } = useCart();
@@ -68,6 +69,11 @@ const Home = () => {
 
   return (
     <>
+      <SEO 
+        title="Home"
+        description="Shop premium RC planes, helicopters, drones, and cars. Best quality RC models with fast shipping across India."
+        keywords="RC planes, RC helicopters, drones, RC cars, hobby store"
+      />
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       <div>
       {/* 1. Banner */}

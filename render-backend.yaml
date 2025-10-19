@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: wing-hobbies-backend
+    env: node
+    buildCommand: npm install
+    startCommand: node src/backend/server.js
+    healthCheckPath: /api/health

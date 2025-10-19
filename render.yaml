@@ -2,28 +2,37 @@ services:
   - type: web
     name: wing-hobbies-backend
     env: node
-    region: oregon
-    plan: free
-    buildCommand: cd src/backend && npm install
-    startCommand: cd src/backend && node server.js
+    buildCommand: npm install
+    startCommand: node src/backend/server.js
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 5000
       - key: MONGODB_URI
         sync: false
       - key: JWT_SECRET
+        generateValue: true
+      - key: EMAIL_USER
         sync: false
+      - key: EMAIL_PASS
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: GCS_PROJECT_ID
+        sync: false
+      - key: GCS_BUCKET_NAME
+        value: wing-hobbies-products
     healthCheckPath: /api/health
 
   - type: web
     name: wing-hobbies-frontend
     env: static
-    region: oregon
-    plan: free
     buildCommand: npm install && npm run build
     staticPublishPath: ./build
     envVars:
       - key: REACT_APP_API_URL
-        value: https://wing-hobbies-backend.onrender.com
+        fromService:
+          type: web
+          name: wing-hobbies-backend
+          property: host

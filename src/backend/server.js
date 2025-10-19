@@ -122,6 +122,10 @@ app.use('/api/banners', require('./routes/banners'));
 app.use('/api/invoice', require('./routes/invoice'));
 app.use('/api/recommendations', require('./routes/recommendations'));
 app.use('/api/inventory', require('./routes/inventory'));
+app.use('/api/coupons', require('./routes/coupons'));
+app.use('/api/stock-alerts', require('./routes/stock-alerts'));
+app.use('/api/analytics', require('./routes/analytics'));
+app.use('/api/razorpay', require('./routes/razorpay'));
 
 // Health Check
 app.get('/api/health', (req, res) => {

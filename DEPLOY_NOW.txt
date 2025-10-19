@@ -1,0 +1,52 @@
+🚀 DEPLOY TO RENDER - 3 STEPS
+
+STEP 1: PUSH TO GITHUB
+1. Install Git from: https://git-scm.com/download/win
+2. Open Command Prompt in project folder
+3. Run these commands:
+   git init
+   git add .
+   git commit -m "Ready for deployment"
+   git remote add origin YOUR_GITHUB_REPO_URL
+   git push -u origin main
+
+STEP 2: DEPLOY BACKEND ON RENDER
+1. Go to: https://dashboard.render.com/
+2. Sign up with GitHub
+3. Click "New +" → "Web Service"
+4. Connect your repository
+5. Settings:
+   - Name: wing-hobbies-backend
+   - Build Command: chmod +x build.sh && ./build.sh
+   - Start Command: node src/backend/server.js
+6. Add Environment Variables:
+   MONGODB_URI=your_mongodb_connection_string
+   JWT_SECRET=your_random_32_character_secret
+   EMAIL_USER=your_email@gmail.com
+   EMAIL_PASS=your_gmail_app_password
+   RAZORPAY_KEY_ID=your_razorpay_key
+   RAZORPAY_KEY_SECRET=your_razorpay_secret
+   NODE_ENV=production
+7. Click "Create Web Service"
+8. COPY THE BACKEND URL (e.g., https://wing-hobbies-backend.onrender.com)
+
+STEP 3: DEPLOY FRONTEND ON RENDER
+1. Click "New +" → "Static Site"
+2. Connect same repository
+3. Settings:
+   - Name: wing-hobbies-frontend
+   - Build Command: npm install && npm run build
+   - Publish Directory: build
+4. Add Environment Variable:
+   REACT_APP_API_URL=YOUR_BACKEND_URL_FROM_STEP_2
+5. Click "Create Static Site"
+
+DONE! Your site will be live at: https://wing-hobbies-frontend.onrender.com
+
+AFTER DEPLOYMENT:
+- Update CORS in src/backend/server.js with your frontend URL
+- Commit and push changes
+- Render will auto-redeploy
+
+COST: $0 (Free tier)
+TIME: 15 minutes

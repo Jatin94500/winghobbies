@@ -25,6 +25,10 @@ import ShippingPolicyPage from './user/pages/ShippingPolicyPage';
 import ChatWidget from './user/components/ChatWidget';
 import NotFoundPage from './user/pages/NotFoundPage';
 import AuthSuccess from './user/pages/AuthSuccess';
+import NotificationPrompt from './user/components/NotificationPrompt';
+import ForgotPassword from './user/pages/ForgotPassword';
+import ResetPassword from './user/pages/ResetPassword';
+import OrderTracking from './user/pages/OrderTracking';
 import AdminDashboard from './admin/components/Dashboard';
 import ProductManagement from './admin/components/ProductManagement';
 import OrderManagement from './admin/components/OrderManagement';
@@ -108,6 +112,9 @@ function App() {
                       <Route path="/checkout" element={<Checkout />} />
                       <Route path="/login" element={<Login />} />
                       <Route path="/register" element={<Register />} />
+                      <Route path="/forgot-password" element={<ForgotPassword />} />
+                      <Route path="/reset-password/:token" element={<ResetPassword />} />
+                      <Route path="/track-order" element={<OrderTracking />} />
                       <Route path="/auth/success" element={<AuthSuccess />} />
                       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                       <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
@@ -122,6 +129,7 @@ function App() {
                     </Routes>
                   </main>
                   <ChatWidget />
+                  <NotificationPrompt />
                   <Footer />
                 </div>
               } />
